@@ -3,7 +3,7 @@
  * Plugin Name: Digitizer API Extensions
  * Plugin URI: https://digitizer.studio
  * Description: Expose JetEngine FAQ fields to WordPress REST API for content automation
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Digitizer
  * Author URI: https://digitizer.studio
  * License: GPL v2 or later
@@ -21,6 +21,24 @@ if (!defined('ABSPATH')) {
  */
 add_action('rest_api_init', function() {
     
+    // Register FAQ title field for posts
+    register_rest_field('post', 'jet_faq_title', [
+        'get_callback' => function($post) {
+            return get_post_meta($post['id'], 'title', true) ?: '';
+        },
+        'update_callback' => function($value, $post) {
+            if (!is_string($value)) {
+                return new WP_Error('invalid_faq_title', 'FAQ title must be a string', ['status' => 400]);
+            }
+            return update_post_meta($post->ID, 'title', sanitize_text_field($value)) !== false;
+        },
+        'schema' => [
+            'description' => 'JetEngine FAQ section title',
+            'type' => 'string',
+            'context' => ['view', 'edit']
+        ]
+    ]);
+
     // Register FAQ field for posts
     register_rest_field('post', 'jet_qna', [
         
@@ -218,8 +236,9 @@ add_action('rest_api_init', function() {
         'callback' => function($request) {
             return rest_ensure_response([
                 'plugin' => 'Digitizer API Extensions',
-                'version' => '1.0.0',
+                'version' => '1.1.0',
                 'features' => [
+                    'jet_faq_title field in /wp/v2/posts/{id}',
                     'jet_qna field in /wp/v2/posts/{id}',
                     'Bulk update endpoint: /digitizer/v1/faq/bulk',
                     'Support for JetEngine FAQ repeater fields'
