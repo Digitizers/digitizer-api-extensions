@@ -3,7 +3,7 @@
  * Plugin Name: Digitizer API Extensions
  * Plugin URI: https://digitizer.studio
  * Description: Expose JetEngine FAQ fields to WordPress REST API for content automation
- * Version: 1.1.0
+ * Version: 1.2.0-beta.1
  * Author: Digitizer
  * Author URI: https://digitizer.studio
  * License: GPL v2 or later
@@ -236,7 +236,7 @@ add_action('rest_api_init', function() {
         'callback' => function($request) {
             return rest_ensure_response([
                 'plugin' => 'Digitizer API Extensions',
-                'version' => '1.1.0',
+                'version' => '1.2.0-beta.1',
                 'features' => [
                     'jet_faq_title field in /wp/v2/posts/{id}',
                     'jet_qna field in /wp/v2/posts/{id}',
