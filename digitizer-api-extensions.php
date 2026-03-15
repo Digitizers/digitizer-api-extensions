@@ -3,7 +3,7 @@
  * Plugin Name: Digitizer API Extensions
  * Plugin URI: https://digitizer.studio
  * Description: Expose JetEngine FAQ fields to WordPress REST API for content automation
- * Version: 1.4.0
+ * Version: 1.5.0
  * Author: Digitizer
  * Author URI: https://digitizer.studio
  * License: GPL v2 or later
@@ -552,3 +552,26 @@ function digitizer_elementor_collect_ids($elements) {
     }
     return $ids;
 }
+
+/**
+ * Register Rank Math SEO meta fields for REST API
+ */
+add_action('rest_api_init', function() {
+    $seo_fields = [
+        'rank_math_title' => 'SEO title override',
+        'rank_math_description' => 'SEO meta description',
+        'rank_math_focus_keyword' => 'Focus keyword',
+    ];
+    
+    foreach ($seo_fields as $key => $desc) {
+        register_post_meta('post', $key, [
+            'show_in_rest' => true,
+            'single' => true,
+            'type' => 'string',
+            'description' => $desc,
+            'auth_callback' => function() {
+                return current_user_can('edit_posts');
+            }
+        ]);
+    }
+});
