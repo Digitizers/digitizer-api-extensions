@@ -3,7 +3,7 @@
  * Plugin Name: Digitizer API Extensions
  * Plugin URI: https://digitizer.studio
  * Description: Expose JetEngine FAQ fields to WordPress REST API for content automation
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: Digitizer
  * Author URI: https://digitizer.studio
  * License: GPL v2 or later
@@ -21,6 +21,49 @@ if (!defined('ABSPATH')) {
  */
 add_action('rest_api_init', function() {
     
+    // Register author taxonomy custom fields
+    register_rest_field('authors', 'author_description', [
+        'get_callback' => function($term) {
+            return get_term_meta($term['id'], 'author_description', true) ?: '';
+        },
+        'update_callback' => function($value, $term) {
+            return update_term_meta($term->term_id, 'author_description', wp_kses_post($value)) !== false;
+        },
+        'schema' => [
+            'description' => 'Author bio description',
+            'type' => 'string',
+            'context' => ['view', 'edit']
+        ]
+    ]);
+
+    register_rest_field('authors', 'author_image', [
+        'get_callback' => function($term) {
+            return get_term_meta($term['id'], 'author_image', true) ?: '';
+        },
+        'update_callback' => function($value, $term) {
+            return update_term_meta($term->term_id, 'author_image', esc_url_raw($value)) !== false;
+        },
+        'schema' => [
+            'description' => 'Author avatar image URL',
+            'type' => 'string',
+            'context' => ['view', 'edit']
+        ]
+    ]);
+
+    register_rest_field('authors', 'linkedin', [
+        'get_callback' => function($term) {
+            return get_term_meta($term['id'], 'linkedin', true) ?: '';
+        },
+        'update_callback' => function($value, $term) {
+            return update_term_meta($term->term_id, 'linkedin', esc_url_raw($value)) !== false;
+        },
+        'schema' => [
+            'description' => 'Author LinkedIn URL',
+            'type' => 'string',
+            'context' => ['view', 'edit']
+        ]
+    ]);
+
     // Register reading_time field for posts
     register_rest_field('post', 'reading_time', [
         'get_callback' => function($post) {
