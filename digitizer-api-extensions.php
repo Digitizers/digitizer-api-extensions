@@ -3,7 +3,7 @@
  * Plugin Name: Digitizer API Extensions
  * Plugin URI: https://digitizer.studio
  * Description: Expose JetEngine FAQ fields to WordPress REST API for content automation
- * Version: 1.5.0
+ * Version: 1.5.1
  * Author: Digitizer
  * Author URI: https://digitizer.studio
  * License: GPL v2 or later
@@ -558,17 +558,26 @@ function digitizer_elementor_collect_ids($elements) {
  */
 add_action('rest_api_init', function() {
     $seo_fields = [
-        'rank_math_title' => 'SEO title override',
-        'rank_math_description' => 'SEO meta description',
-        'rank_math_focus_keyword' => 'Focus keyword',
+        'rank_math_title'               => 'SEO title override',
+        'rank_math_description'         => 'SEO meta description',
+        'rank_math_focus_keyword'       => 'Focus keyword(s)',
+        'rank_math_robots'              => 'Robot meta directives',
+        'rank_math_canonical_url'       => 'Canonical URL override',
+        'rank_math_primary_category'    => 'Primary category ID',
+        'rank_math_seo_score'           => 'SEO score (0-100)',
+        'rank_math_og_title'            => 'Open Graph title',
+        'rank_math_og_description'      => 'Open Graph description',
+        'rank_math_og_image'            => 'Open Graph image URL',
+        'rank_math_twitter_title'       => 'Twitter card title',
+        'rank_math_twitter_description' => 'Twitter card description',
     ];
     
     foreach ($seo_fields as $key => $desc) {
         register_post_meta('post', $key, [
-            'show_in_rest' => true,
-            'single' => true,
-            'type' => 'string',
-            'description' => $desc,
+            'show_in_rest'  => true,
+            'single'        => true,
+            'type'          => 'string',
+            'description'   => $desc,
             'auth_callback' => function() {
                 return current_user_can('edit_posts');
             }
