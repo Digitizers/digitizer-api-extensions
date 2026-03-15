@@ -297,7 +297,7 @@ add_action('rest_api_init', function() {
         'callback' => function($request) {
             return rest_ensure_response([
                 'plugin' => 'Digitizer API Extensions',
-                'version' => '1.2.0',
+                'version' => '1.5.1',
                 'features' => [
                     'jet_faq_title field in /wp/v2/posts/{id}',
                     'jet_qna field in /wp/v2/posts/{id}',
