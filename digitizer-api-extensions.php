@@ -3,7 +3,7 @@
  * Plugin Name: Digitizer API Extensions
  * Plugin URI: https://digitizer.studio
  * Description: Expose JetEngine FAQ fields to WordPress REST API for content automation
- * Version: 1.5.1
+ * Version: 1.5.2
  * Author: Digitizer
  * Author URI: https://digitizer.studio
  * License: GPL v2 or later
@@ -259,8 +259,36 @@ add_action('rest_api_init', function() {
                     continue;
                 }
                 
-                // Update FAQ
-                $updated = update_post_meta($post_id, 'qna', $faq);
+                // The route-level check only proves the user can edit
+                // something; each post needs its own check.
+                if (!current_user_can('edit_post', $post_id)) {
+                    $results[] = [
+                        'post_id' => $post_id,
+                        'success' => false,
+                        'error' => 'Not allowed to edit this post'
+                    ];
+                    continue;
+                }
+                
+                // Same validation as the single-post jet_qna route: an array
+                // of items, each with a non-empty question and answer.
+                $faq_error = digitizer_validate_faq($faq);
+                if ($faq_error !== '') {
+                    $results[] = [
+                        'post_id' => $post_id,
+                        'success' => false,
+                        'error' => $faq_error
+                    ];
+                    continue;
+                }
+                
+                // Update FAQ (an empty array clears it)
+                if (empty($faq)) {
+                    delete_post_meta($post_id, 'qna');
+                    $updated = true;
+                } else {
+                    $updated = update_post_meta($post_id, 'qna', $faq);
+                }
                 
                 $results[] = [
                     'post_id' => $post_id,
@@ -297,7 +325,7 @@ add_action('rest_api_init', function() {
         'callback' => function($request) {
             return rest_ensure_response([
                 'plugin' => 'Digitizer API Extensions',
-                'version' => '1.5.1',
+                'version' => '1.5.2',
                 'features' => [
                     'jet_faq_title field in /wp/v2/posts/{id}',
                     'jet_qna field in /wp/v2/posts/{id}',
@@ -316,7 +344,9 @@ add_action('rest_api_init', function() {
                 ]
             ]);
         },
-        'permission_callback' => '__return_true'
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        }
     ]);
 });
 
@@ -366,8 +396,8 @@ add_action('rest_api_init', function() {
                 'tree' => $tree
             ]);
         },
-        'permission_callback' => function() {
-            return current_user_can('edit_posts');
+        'permission_callback' => function($request) {
+            return current_user_can('edit_post', intval($request['post_id']));
         }
     ]);
 
@@ -442,8 +472,8 @@ add_action('rest_api_init', function() {
                 )))
             ]);
         },
-        'permission_callback' => function() {
-            return current_user_can('edit_posts');
+        'permission_callback' => function($request) {
+            return current_user_can('edit_post', intval($request['post_id']));
         },
         'args' => [
             'updates' => [
@@ -454,6 +484,34 @@ add_action('rest_api_init', function() {
         ]
     ]);
 });
+
+/**
+ * Helper: Validate a FAQ value the way the single-post route does.
+ * Returns '' when valid, or an error message.
+ */
+function digitizer_validate_faq($faq) {
+    if (empty($faq)) {
+        return ''; // clearing is allowed
+    }
+    if (!is_array($faq)) {
+        return 'FAQ must be an array of question/answer objects';
+    }
+    foreach ($faq as $index => $item) {
+        if (!is_array($item)) {
+            return "FAQ item $index must be an object/array";
+        }
+        if (!isset($item['question']) || !isset($item['answer'])) {
+            return "FAQ item $index must have 'question' and 'answer' fields";
+        }
+        if (!is_string($item['question']) || !is_string($item['answer'])) {
+            return "FAQ item $index question and answer must be strings";
+        }
+        if (empty(trim($item['question'])) || empty(trim($item['answer']))) {
+            return "FAQ item $index has empty question or answer";
+        }
+    }
+    return '';
+}
 
 /**
  * Helper: Build simplified tree from Elementor data
