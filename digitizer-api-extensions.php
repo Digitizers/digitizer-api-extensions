@@ -283,7 +283,7 @@ add_action('rest_api_init', function() {
                 }
                 
                 // Update FAQ (an empty array clears it)
-                if (empty($faq)) {
+                if ($faq === []) {
                     delete_post_meta($post_id, 'qna');
                     $updated = true;
                 } else {
@@ -490,11 +490,11 @@ add_action('rest_api_init', function() {
  * Returns '' when valid, or an error message.
  */
 function digitizer_validate_faq($faq) {
-    if (empty($faq)) {
-        return ''; // clearing is allowed
-    }
     if (!is_array($faq)) {
         return 'FAQ must be an array of question/answer objects';
+    }
+    if ($faq === []) {
+        return ''; // clearing is allowed
     }
     foreach ($faq as $index => $item) {
         if (!is_array($item)) {
