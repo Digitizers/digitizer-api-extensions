@@ -284,8 +284,11 @@ add_action('rest_api_init', function() {
                 
                 // Update FAQ (an empty array clears it)
                 if ($faq === []) {
-                    delete_post_meta($post_id, 'qna');
-                    $updated = true;
+                    $deleted = delete_post_meta($post_id, 'qna');
+                    // delete_post_meta() returns false both when the delete
+                    // fails and when there was nothing to delete; clearing an
+                    // already-empty FAQ is a success, a failed delete is not.
+                    $updated = $deleted || '' === get_post_meta($post_id, 'qna', true);
                 } else {
                     $updated = update_post_meta($post_id, 'qna', $faq);
                 }
@@ -506,7 +509,7 @@ function digitizer_validate_faq($faq) {
         if (!is_string($item['question']) || !is_string($item['answer'])) {
             return "FAQ item $index question and answer must be strings";
         }
-        if (empty(trim($item['question'])) || empty(trim($item['answer']))) {
+        if ('' === trim($item['question']) || '' === trim($item['answer'])) {
             return "FAQ item $index has empty question or answer";
         }
     }
