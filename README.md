@@ -2,6 +2,8 @@
 
 WordPress plugin that extends the REST API with custom endpoints for JetEngine FAQ fields, Elementor data, Rank Math SEO, author taxonomy, and post metadata.
 
+**Current version: 1.5.2**
+
 ## Features
 
 - **FAQ API**: Read/write JetEngine FAQ repeater fields via REST API
@@ -60,6 +62,11 @@ All 12 Rank Math fields accessible via the post `meta` object:
 All write operations require WordPress authentication (Application Password recommended).
 
 ## Changelog
+
+### v1.5.2
+- Security: bulk FAQ and Elementor routes require `edit_post` on each target post (previously any user with `edit_posts` could write to every post)
+- Bulk FAQ writes validated like the single-post route; only a real empty array clears, `"0"` accepted as content, failed clears reported
+- Info endpoint requires `edit_posts` (was public)
 
 ### v1.5.1
 - All 12 Rank Math SEO fields exposed via REST API
